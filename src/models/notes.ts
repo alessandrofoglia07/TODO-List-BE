@@ -14,4 +14,6 @@ const NoteSchema = new Schema({
     content: { type: String, required: true },
 });
 
-export default model<INoteModel>('Note', NoteSchema);
+const Note = model<INoteModel>('Note', NoteSchema);
+
+export default Note;

@@ -6,7 +6,7 @@
     "type": "module",
     "scripts": {
         "start:ts": "tsc -w",
-        "start:js": "nodemon dist/index.js dist/models/*.js",
+        "start:js": "concurrently \"nodemon dist/index.js\" \"nodemon dist/models/users.js\" \"nodemon dist/models/notes.js\" ",
         "start": "concurrently npm:start:*"
     },
     "keywords": [],
