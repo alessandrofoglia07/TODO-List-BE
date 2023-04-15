@@ -2,9 +2,11 @@ import mongoose from "mongoose";
 import Note from './models/notes.js';
 import User from './models/users.js';
 import express, { Request, Response } from 'express';
+import authenticateJWT, { AuthenticatedRequest } from "./authentication.js";
 import cors from 'cors';
 import dotenv from 'dotenv';
 import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
 
 dotenv.config();
 
@@ -74,12 +76,14 @@ app.post('/api/login', async (req: Request, res: Response) => {
             return;
         }
         console.log('User found, checking password...');
-        const userFound = result.document;
-        const isPasswordCorrect = await bcrypt.compare(password, userFound.password);
+        const user = result.document;
+        const isPasswordCorrect = await bcrypt.compare(password, user.password);
 
         if (isPasswordCorrect) {
             console.log('Password correct, logging in...');
-            res.status(200).send({ message: 'Login successful' });
+            const accessToken = jwt.sign({ email: user.email }, process.env.JWT_SECRET as string, { expiresIn: '20d' });
+
+            res.status(200).send({ message: 'Login successful', email: user.email, id: user._id, token: accessToken });
             return;
         } else {
             console.log('Password incorrect');
@@ -89,5 +93,24 @@ app.post('/api/login', async (req: Request, res: Response) => {
     } catch (err) {
         res.status(500);
         console.log(err);
+    }
+});
+
+app.post('/api/notes/add', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
+    const { title, content, userEmail } = req.body;
+
+    try {
+        console.log('Creating new note...');
+        const newNote = new Note({
+            userEmail: userEmail,
+            title: title,
+            content: content
+        });
+        await newNote.save();
+        console.log('Note created');
+        res.status(201).send({ message: 'Note created' });
+    } catch (err) {
+        console.log(err);
+        res.status(500).send({ message: 'Error creating note' });
     }
 });
