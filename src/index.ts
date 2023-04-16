@@ -136,3 +136,15 @@ app.delete('/api/notes/delete/:id', authenticateJWT, async (req: AuthenticatedRe
         console.log(err);
     }
 });
+
+app.patch('/api/notes/update', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
+    const { id } = req.body;
+    const { title, content } = req.body.note;
+
+    try {
+        await Note.findByIdAndUpdate(id, { title: title, content: content });
+        res.status(200).send({ message: 'Note updated' });
+    } catch (err) {
+        console.log(err);
+    }
+});
