@@ -105,3 +105,24 @@ app.post('/api/notes/add', authenticateJWT, async (req, res) => {
         res.status(500).send({ message: 'Error creating note' });
     }
 });
+app.post('/api/notes/getAll', authenticateJWT, async (req, res) => {
+    const email = req.body.userEmail;
+    try {
+        const notes = await Note.find({ userEmail: email });
+        res.status(200).send(notes);
+    }
+    catch (err) {
+        console.log(err);
+    }
+});
+app.delete('/api/notes/delete/:id', authenticateJWT, async (req, res) => {
+    const id = req.params.id;
+    try {
+        await Note.findByIdAndDelete(id);
+        console.log('Note deleted');
+        res.status(200).send({ message: 'Note deleted' });
+    }
+    catch (err) {
+        console.log(err);
+    }
+});
